@@ -1,22 +1,13 @@
-// modified from 8schools.stan
 data {
-  int<lower=0> J; // number of schools
-  real y[J]; // estimated treatment effects
-  real<lower=0> sigma[J]; // s.e. of effect estimates
+  real y; // estimated treatment effect
+  real<lower=0> se; // s.e. of effect estimate
 }
 parameters {
- // real mu; // population mean
-  real<lower=0> tau; // population sd
-  real eta[J]; // school-level errors
-}
-transformed parameters {
-  real <lower=0> theta[J]; // school effects, truncated at 0
-  for (j in 1:J)
-    theta[j] =  tau * eta[j];
+  // real<lower=0> tau; // tau is the posterior treatment effect, require prior>=0
+  real tau; // tau is the posterior treatment effect, allow negative treatment effects
+  real<lower=0> sigma; // sigma is the posterior standard error
 }
 model {
-// eta ~ normal(0, 1);
-//  y ~ normal(theta, sigma);
-  target += normal_lpdf(eta | 0, 1);
-  target += normal_lpdf(y | theta, sigma);
+ tau ~ normal(0,sigma); // a prior on the treatment effect, should be truncated at 0 depending on above
+ y ~ normal(tau, se);
 }

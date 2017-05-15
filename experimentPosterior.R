@@ -1,5 +1,6 @@
 
 
+
 ## Building on https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started
 ## the 8 schools example
 library(rstan)
@@ -11,17 +12,29 @@ schools_dat <- list(J = 8,
 ## Now just for one school
 
 schooltau <- c(28)
-dim(schooltau) <- 1
+#dim(schooltau) <- 1
 schoolse <- c(14)
-dim(schoolse) <- 1
+#dim(schoolse) <- 1
 
-exp_dat <- list(J = 1,
-                y = schooltau,
-                sigma = schoolse)
+exp_dat <- list(y = schooltau,
+                se = schoolse)
 
-fit <- stan(file = 'experimentPosterior.stan', data = exp_dat,
-            iter = 1000, chains = 4)
+fit <- stan(file = 'experimentPosterior.stan', data = exp_dat, iter = 1000, chains = 4,
+            control = list(adapt_delta = 0.999))
 
+print(fit)
+summary(fit,"tau")
+
+posttau <- extract(fit,"tau",permuted=TRUE)$tau
+plot(density(posttau))
+
+## Visually inspect convergence of tau
+tauchains <-  extract(fit,"tau",permuted=FALSE)
+plot(c(1,dim(tauchains)[1]),range(tauchains),type="n")
+points(1:dim(tauchains)[1],tauchains[,1,1],type="b",col="orange")
+points(1:dim(tauchains)[1],tauchains[,2,1],type="b",col="blue")
+points(1:dim(tauchains)[1],tauchains[,3,1],type="b",col="red")
+points(1:dim(tauchains)[1],tauchains[,4,1],type="b",col="green")
 
 
 ### This from www.stat.columbia.edu/~gelman/book/software.pdf
